@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список студентов</title>
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="main.js" defer></script>
+</head>
+
+<body>
+    <h1 class="title">Список студентов</h1>
+    <button class="btn" id="openFormBtn">Добавить студента</button>
+    <div class="container" id="container">
+        <div class="filter">
+            <h2 class="title">Фильтры для списка студентов</h2>
+            <label class="filter__field">
+                <span class="form__text">Фамилия</span>
+                <input class="form__input input-text" type="text" id="surnameFilter" autocomplete="off">
+            </label>
+            <label class="form__field">
+                <span class="form__text">Имя</span>
+                <input class="form__input input-text" type="text" id="nameFilter" name="name" autocomplete="off">
+            </label>
+            <label class="form__field">
+                <span class="form__text">Отчество</span>
+                <input class="form__input input-text" type="text" id="middleNameFilter" name="middleName" autocomplete="off">
+            </label> 
+            <label class="form__field">
+                <span class="form__text">Факультет</span>
+                <input class="form__input input-text" type="text" id="facultyFilter" name="facultyFilter" autocomplete="off">
+            </label>
+            <label class="form__field">
+                <span class="form__text">Год начала обучения</span>
+                <input class="form__input" id="startYearFilter" type="number" name="startYearFilter" autocomplete="off">
+            </label>
+            <label class="form__field">
+                <span class="form__text">Год окончания обучения</span>
+                <input class="form__input" id="finishYearFilter" type="number" name="finishYearFilter" autocomplete="off">
+            </label>
+            <button class="btn" id="filterBtn">Применить фильтры</button>
+            <button class="btn btn-reset" id="resetFilterBtn">Сбросить фильтры</button>
+        </div>
+        <table class="table">
+            <thead class="thead">
+                <tr>
+                    <th class="table-text" id="sortFIO">ФИО</th>
+                    <th class="table-text" id="sortFaculty">Факультет</th>
+                    <th class="table-text" id="sortBirthDay">Дата рождения и возраст</th>
+                    <th class="table-text" id="sortStartYear">Годы обучения</th>
+                    <th>Действие</th>
+                </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+        </table>
+
+    </div>
+
+    <!-- модальное окно -->
+    <div class="modal-parent" id="modal-form">
+        <div class="modal-wrapper">
+            <div class="modal">
+                <h2 class="modal__title">Заполните данные студента</h2>
+                <form class="form" id="form" autocomplete="off">
+                    <label class="form__field">
+                        <span class="form__text">Фамилия</span>
+                        <input class="form__input input-text" type="text" id="surname" name="surname" autocomplete="off"
+                            required>
+                    </label>
+                    <label class="form__field">
+                        <span class="form__text">Имя</span>
+                        <input class="form__input input-text" type="text" id="name" name="name" autocomplete="off"
+                            required>
+                    </label>
+                    <label class="form__field">
+                        <span class="form__text">Отчество</span>
+                        <input class="form__input input-text" type="text" id="middleName" name="middleName"
+                            autocomplete="off" required>
+                    </label>
+                    <label class="form__field">
+                        <span class="form__text">Дата рождения</span>
+                        <input class="form__input" id="birthDay" type="date" name="birthDay" autocomplete="off"
+                            required>
+                    </label>
+                    <label class="form__field">
+                        <span class="form__text">Год начала обучения</span>
+                        <input class="form__input" id="startYear" type="number" name="startYear" min="2000"
+                            autocomplete="off" required>
+                    </label>
+                    <label class="form__field">
+                        <span class="form__text">Факультет</span>
+                        <input class="form__input input-text" type="text" name="faculty" id="faculty" autocomplete="off"
+                            required>
+                    </label>
+                    <button class="btn" id="add-btn">Добавить студента</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
