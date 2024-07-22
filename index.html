@@ -27,7 +27,7 @@
             </label>
             <label class="form__field">
                 <span class="form__text">Отчество</span>
-                <input class="form__input input-text" type="text" id="middleNameFilter" name="middleName" autocomplete="off">
+                <input class="form__input input-text" type="text" id="lastnameFilter" name="lastname" autocomplete="off">
             </label> 
             <label class="form__field">
                 <span class="form__text">Факультет</span>
@@ -35,7 +35,7 @@
             </label>
             <label class="form__field">
                 <span class="form__text">Год начала обучения</span>
-                <input class="form__input" id="startYearFilter" type="number" name="startYearFilter" autocomplete="off">
+                <input class="form__input" id="studyStartFilter" type="number" name="studyStartFilter" autocomplete="off">
             </label>
             <label class="form__field">
                 <span class="form__text">Год окончания обучения</span>
@@ -49,8 +49,8 @@
                 <tr>
                     <th class="table-text" id="sortFIO">ФИО</th>
                     <th class="table-text" id="sortFaculty">Факультет</th>
-                    <th class="table-text" id="sortBirthDay">Дата рождения и возраст</th>
-                    <th class="table-text" id="sortStartYear">Годы обучения</th>
+                    <th class="table-text" id="sortbirthday">Дата рождения и возраст</th>
+                    <th class="table-text" id="sortstudyStart">Годы обучения</th>
                     <th>Действие</th>
                 </tr>
             </thead>
@@ -77,17 +77,17 @@
                     </label>
                     <label class="form__field">
                         <span class="form__text">Отчество</span>
-                        <input class="form__input input-text" type="text" id="middleName" name="middleName"
+                        <input class="form__input input-text" type="text" id="lastname" name="lastname"
                             autocomplete="off" required>
                     </label>
                     <label class="form__field">
                         <span class="form__text">Дата рождения</span>
-                        <input class="form__input" id="birthDay" type="date" name="birthDay" autocomplete="off"
+                        <input class="form__input" id="birthday" type="date" name="birthday" autocomplete="off"
                             required>
                     </label>
                     <label class="form__field">
                         <span class="form__text">Год начала обучения</span>
-                        <input class="form__input" id="startYear" type="number" name="startYear" min="2000"
+                        <input class="form__input" id="studyStart" type="number" name="studyStart" min="2000"
                             autocomplete="off" required>
                     </label>
                     <label class="form__field">

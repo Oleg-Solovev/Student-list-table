@@ -3,6 +3,23 @@ function saveInLocalStorage(name, data) {
   localStorage.setItem(name, JSON.stringify(data));
 }
 
+//  Функция сохранения студента на сервере
+async function saveInLocalServer(item) {
+  const response = await fetch('http://localhost:3000/api/students', {
+    method: 'POST',
+    body: JSON.stringify(item),
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  });
+
+  const studentItem = await response.json();
+  return studentItem;
+}
+
+//  Функция загрузки массива студентов с сервера
+
+
 // Функция загрузки массива студентов из LS 
 function downloadFromLocalStorage(name) {
   // Получаем данные в виде строки из LS
@@ -44,7 +61,7 @@ function courseNum(studentObj) {
   if (today.getMonth() < 8) {
     today = today.getFullYear() - 1;
   }
-  let course = +(today - studentObj.startYear);
+  let course = +(today - studentObj.studyStart);
   if (course > -1 && course < 4) {
     course = `${course + 1} курс`;
   }
@@ -93,33 +110,32 @@ function validationForm(form) {
   }
 
   // Проверка даты рождения
-  let date = new Date(birthDayInp.value).getTime();
+  let date = new Date(birthdayInp.value).getTime();
   currentDate = new Date();
-  removeError(birthDayInp);
+  removeError(birthdayInp);
   if (date < 0 || date > currentDate.getTime()) {
-    createError(birthDayInp, 'Диапазон даты от 01.01.1900 до текущей даты!');
+    createError(birthdayInp, 'Диапазон даты от 01.01.1900 до текущей даты!');
     accept = false;
   }
   // Проверка года начала обучения
-  removeError(startYearInp);
-  if (startYearInp.value === ''
-    || startYearInp.value < 2000
-    || startYearInp.value > currentDate.getFullYear()) {
-    createError(startYearInp, 'Год начала обучения от 2000 до текущего года!');
+  removeError(studyStartInp);
+  if (studyStartInp.value === ''
+    || studyStartInp.value < 2000
+    || studyStartInp.value > currentDate.getFullYear()) {
+    createError(studyStartInp, 'Год начала обучения от 2000 до текущего года!');
     accept = false;
   }
 
   return accept
 }
 
-// Функция вывода одного студента в таблицу. Функция должна вернуть html элемент с информацией о студенте. 
-// У функции должен быть один аргумент - объект студента.
+// Функция вывода одного студента в таблицу 
 function getStudentItem(studentObj) {
   let studentTr = document.createElement("tr")
   let fulNameTd = document.createElement("td")
   let faculTd = document.createElement("td")
-  let birthDayTd = document.createElement("td")
-  let startYearTd = document.createElement("td")
+  let birthdayTd = document.createElement("td")
+  let studyStartTd = document.createElement("td")
   let removeTd = document.createElement("td")
   let removeBtn = document.createElement("button")
 
@@ -134,22 +150,19 @@ function getStudentItem(studentObj) {
     }
   }
   // Добавление данных из объекта в ячейки таблицы
-  fulNameTd.textContent = studentObj.fullName;
+  fulNameTd.textContent = `${studentObj.surname} ${studentObj.name} ${studentObj.lastname}`;
   faculTd.textContent = studentObj.faculty;
-  birthDayTd.textContent = `${getDateFormat(studentObj.birthDay)} (${getAge(studentObj.birthDay)})`;
-  startYearTd.textContent = `${studentObj.startYear}-${+(studentObj.startYear) + 4} (${courseNum(studentObj)})`;
+  birthdayTd.textContent = `${getDateFormat(studentObj.birthday)} (${getAge(studentObj.birthday)})`;
+  studyStartTd.textContent = `${studentObj.studyStart}-${+(studentObj.studyStart) + 4} (${courseNum(studentObj)})`;
   removeTd.append(removeBtn);
   removeBtn.textContent = "Удалить";
   removeBtn.classList.add('btn', 'btn-smal', 'btn-reset');
 
-  studentTr.append(fulNameTd, faculTd, birthDayTd, startYearTd, removeTd)
+  studentTr.append(fulNameTd, faculTd, birthdayTd, studyStartTd, removeTd)
   return studentTr
 }
 
-// Функция отрисовки всех студентов. Аргументом функции будет массив студентов. 
-// Функция должна использовать ранее созданную функцию создания одной записи для студента.
-// Цикл поможет вам создать список студентов. 
-// Каждый раз при изменении списка студента вы будете вызывать эту функцию для отрисовки таблицы.
+// Функция отрисовки таблицы всех студентов
 function renderStudentsList(arr) {
   tbody.innerHTML = '';
   for (let studentObj of arr) {
@@ -159,7 +172,7 @@ function renderStudentsList(arr) {
 
 // функция сортировки массива студентов
 function getSortStudentsList(prop) {
-  const sortArr = [...studentsList];
+  const sortArr = downloadFromLocalStorage('studentsList');
   sortArr.sort((a, b) => (!dir
     ? a[prop] < b[prop]
     : a[prop] > b[prop])
@@ -173,23 +186,56 @@ function getSortStudentsList(prop) {
 }
 
 // Фильтр
-function filterStudent(text, prop, arr) {
+function filterStudent(value, prop, arr) {
   let filterArr = [];
-  if (typeof text === 'string') {
-    console.log(typeof text);
-    filterArr = arr.filter(el => el[prop].toLowerCase().includes(text.toLowerCase()))
+  if (typeof value === 'string') {
+    console.log(typeof value);
+    filterArr = arr.filter(el => el[prop].toLowerCase().includes(value.toLowerCase()))
   };
-  if (typeof text === 'number') {
-    console.log(typeof text);
-    console.log(text);
-    filterArr = arr.filter(el => el[prop] === text);
+  if (typeof value === 'number') {
+    console.log(typeof value);
+    console.log(value);
+    filterArr = arr.filter(el => el[prop] === value);
   };
 
   return renderStudentsList(filterArr);
 }
 
 
-// 1 этап - создание статичных элементов html и загрузка интерактивных элементов в JS
+// Start. Создание статичных элементов html и загрузка интерактивных элементов в JS
+
+// Массив объектов студентов первоначальный
+const studentsList = [
+  {
+    name: 'Олег',
+    surname: 'Соловьёв',
+    lastname: 'Валерьевич',
+    birthday: new Date('1986-09-03'),
+    studyStart: 2004,
+    faculty: 'Экономический',
+  },
+  {
+    name: 'Павел',
+    surname: 'Балов',
+    lastname: 'Сергеевич',
+    birthday: new Date('1993-04-10'),
+    studyStart: 2021,
+    faculty: 'Юридический',
+  },
+  {
+    name: 'Вячеслав',
+    surname: 'Иванов',
+    lastname: 'Павлович',
+    birthday: new Date('1990-06-24'),
+    studyStart: 2023,
+    faculty: 'Финансовый',
+  },
+];
+
+// сохранение первоначального массива студентов на сервер
+for (let studentItem of studentsList) {
+  saveInLocalServer(studentItem);
+};
 
 // Загрузка модального окна в JS
 const openFormBtn = document.getElementById('openFormBtn');
@@ -197,9 +243,9 @@ const modalForm = document.getElementById('modal-form');
 const addBtn = document.getElementById('add-btn');
 let surnameInp = document.getElementById('surname');
 let nameInp = document.getElementById('name');
-let middleNameInp = document.getElementById('middleName');
-let birthDayInp = document.getElementById('birthDay');
-let startYearInp = document.getElementById('startYear');
+let lastnameInp = document.getElementById('lastname');
+let birthdayInp = document.getElementById('birthday');
+let studyStartInp = document.getElementById('studyStart');
 let facultyInp = document.getElementById('faculty');
 
 // открытие модального окна и очистка предыдущих значений
@@ -207,9 +253,9 @@ openFormBtn.addEventListener("click", function () {
   modalForm.classList.add("modal-parent--open");
   surnameInp.value = '';
   nameInp.value = '';
-  middleNameInp.value = '';
-  birthDayInp.value = '';
-  startYearInp.value = '';
+  lastnameInp.value = '';
+  birthdayInp.value = '';
+  studyStartInp.value = '';
   facultyInp.value = '';
 })
 
@@ -217,18 +263,18 @@ openFormBtn.addEventListener("click", function () {
 const tbody = document.getElementById('tbody');
 const sortFIO = document.getElementById('sortFIO');
 const sortFaculty = document.getElementById('sortFaculty');
-const sortBirthDay = document.getElementById('sortBirthDay');
-const sortStartYear = document.getElementById('sortStartYear');
+const sortbirthday = document.getElementById('sortbirthday');
+const sortstudyStart = document.getElementById('sortstudyStart');
 
 //  Загрузка полей для фильтрации
 const surnameFilter = document.getElementById('surnameFilter');
 const nameFilter = document.getElementById('nameFilter');
-const middleNameFilter = document.getElementById('middleNameFilter');
+const lastnameFilter = document.getElementById('lastnameFilter');
 const facultyFilter = document.getElementById('facultyFilter');
-const startYearFilter = document.getElementById('startYearFilter');
+const studyStartFilter = document.getElementById('studyStartFilter');
 const finishYearFilter = document.getElementById('finishYearFilter');
 
-// Сортировка    События кликов на соответствующие колонки для сортировки
+// Сортировка. События кликов на соответствующие колонки для сортировки
 let dir = true;
 sortFIO.addEventListener("click", function (event) {
   if (event._isClick === true) return
@@ -240,17 +286,17 @@ sortFaculty.addEventListener("click", function (event) {
   getSortStudentsList('faculty');
 });
 
-sortBirthDay.addEventListener("click", function (event) {
+sortbirthday.addEventListener("click", function (event) {
   if (event._isClick === true) return
-  getSortStudentsList('birthDay', dir);
+  getSortStudentsList('birthday', dir);
 });
 
-sortStartYear.addEventListener("click", function (event) {
+sortstudyStart.addEventListener("click", function (event) {
   if (event._isClick === true) return
-  getSortStudentsList('startYear', dir);
+  getSortStudentsList('studyStart', dir);
 });
 
-// Фильтрация    События клика по кнопке для применения фильтров
+// Фильтрация. Событие клика по кнопке для применения фильтров
 document.getElementById('filterBtn').addEventListener("click", (e) => {
   e.preventDefault();
   let filterArr = [...studentsList];
@@ -261,14 +307,14 @@ document.getElementById('filterBtn').addEventListener("click", (e) => {
   if (nameFilter.value.trim() !== '') {
     filterArr = filterStudent(nameFilter.value.trim(), 'name', filterArr);
   };
-  if (middleNameFilter.value.trim() !== '') {
-    filterArr = filterStudent(middleNameFilter.value.trim(), 'middleName', filterArr);
+  if (lastnameFilter.value.trim() !== '') {
+    filterArr = filterStudent(lastnameFilter.value.trim(), 'lastname', filterArr);
   };
   if (facultyFilter.value.trim() !== '') {
     filterArr = filterStudent(facultyFilter.value.trim(), 'faculty', filterArr);
   };
-  if (startYearFilter.value.trim() !== '') {
-    filterArr = filterStudent(+startYearFilter.value.trim(), 'startYear', filterArr);
+  if (studyStartFilter.value.trim() !== '') {
+    filterArr = filterStudent(+studyStartFilter.value.trim(), 'studyStart', filterArr);
   };
   if (finishYearFilter.value.trim() !== '') {
     filterArr = filterStudent(+finishYearFilter.value.trim(), 'finishYear', filterArr);
@@ -276,14 +322,14 @@ document.getElementById('filterBtn').addEventListener("click", (e) => {
 
 });
 
-// Сброс всех фильтров по кнопке сброса
+// Событие клика по кнопке сброса для удаления всех фильтров
 document.getElementById('resetFilterBtn').addEventListener("click", (e) => {
   e.preventDefault();
   surnameFilter.value = '';
   nameFilter.value = '';
-  middleNameFilter.value = '';
+  lastnameFilter.value = '';
   facultyFilter.value = '';
-  startYearFilter.value = '';
+  studyStartFilter.value = '';
   finishYearFilter.value = '';
 
   // запуск функции отрисовки таблицы студентов
@@ -300,7 +346,7 @@ modalForm.addEventListener("click", function (event) {
   modalForm.classList.remove("modal-parent--open")
 })
 
-// закрытие модального окна на Esc
+// закрытие модального окна по кнопке Esc
 window.addEventListener("keydown", function (event) {
   if (event.key === "Escape") {
     modalForm.classList.remove("modal-parent--open")
@@ -308,75 +354,36 @@ window.addEventListener("keydown", function (event) {
 });
 
 
-// Этап 5. К форме добавления студента добавьте слушатель события отправки формы, в котором будет проверка введенных данных.
 // Кнопка отправки формы и проверка введённых данных
-addBtn.addEventListener("click", (e) => {
+addBtn.addEventListener("click", async e => {
   e.preventDefault();
 
   if (validationForm(modalForm)) {
 
     let newStudent = {
-      surname: surnameInp.value,
       name: nameInp.value,
-      middleName: middleNameInp.value,
-      fullName: `${surnameInp.value} ${nameInp.value} ${middleNameInp.value}`,
-      birthDay: Date.parse(birthDayInp.value),
-      startYear: startYearInp.value,
-      finishYear: startYearInp.value + 4,
+      surname: surnameInp.value,
+      lastname: lastnameInp.value,
+      birthday: Date.parse(birthdayInp.value),
+      studyStart: +studyStartInp.value,
       faculty: facultyInp.value,
     };
 
-    studentsList.push(newStudent);
-    saveInLocalStorage("studentsList", studentsList);
+    // Добавляем нового студента с данными на сервер
+    saveInLocalServer(newStudent);
+
+    // Закрытие модального окна
     modalForm.classList.remove("modal-parent--open")
 
-    // запуск функции отрисовки таблицы студентов
+    // Получение массива студентов с сервера и запуск отрисовки таблицы студентов
+    
     renderStudentsList(studentsList);
     console.log(studentsList);
   }
 
 })
 
-// Массив объектов студентов
-const studentsList = [
-  {
-    id: Math.round(Math.random() * 1000),
-    surname: 'Соловьёв',
-    name: 'Олег',
-    middleName: 'Валерьевич',
-    fullName: 'Соловьёв Олег Валерьевич',
-    birthDay: new Date('1986-09-03'),
-    startYear: 2004,
-    finishYear: 2008,
-    faculty: 'Экономический',
-  },
-  {
-    id: Math.round(Math.random() * 1000),
-    surname: 'Балов',
-    name: 'Павел',
-    middleName: 'Сергеевич',
-    fullName: 'Балов Павел Сергеевич',
-    birthDay: new Date('1993-04-10'),
-    startYear: 2021,
-    finishYear: 2025,
-    faculty: 'Юридический',
-  },
-  {
-    id: Math.round(Math.random() * 1000),
-    surname: 'Иванов',
-    name: 'Вячеслав',
-    middleName: 'Павлович',
-    fullName: 'Иванов Вячеслав Павлович',
-    birthDay: new Date('1990-06-24'),
-    startYear: 2023,
-    finishYear: 2027,
-    faculty: 'Финансовый',
-  },
-];
 
-// сохранение массива студентов в LS 
-saveInLocalStorage("studentsList", studentsList);
-console.log(studentsList);
 
 // Отрисовка всех студентов в таблице
 renderStudentsList(studentsList);
