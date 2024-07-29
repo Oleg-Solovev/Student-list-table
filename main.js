@@ -1,7 +1,3 @@
-// Функция сохранения массива студентов в LS 
-function saveInLocalStorage(name, data) {
-  localStorage.setItem(name, JSON.stringify(data));
-}
 
 //  Функция сохранения студента на сервере
 async function saveInLocalServer(item) {
@@ -12,25 +8,35 @@ async function saveInLocalServer(item) {
       'Content-Type': 'application/json',
     }
   });
-
-  const studentItem = await response.json();
-  return studentItem;
+  return getFromLocalServer();
 }
 
 //  Функция загрузки массива студентов с сервера
-
-
-// Функция загрузки массива студентов из LS 
-function downloadFromLocalStorage(name) {
-  // Получаем данные в виде строки из LS
-  let data = localStorage.getItem(name);
-  // Если есть данные в LS - парсим, если нет - возвращаем пустой массив
-  return data ? JSON.parse(data) : [];
+async function getFromLocalServer() {
+  const response = await fetch('http://localhost:3000/api/students', {
+    method: 'GET'
+  });
+  let studentArr = await response.json();
+  return renderStudentsList(studentArr);
 }
 
+//  Функция удаления студента на сервере
+async function deleteFromLocalServer(id, element) {
+  if (!confirm('Вы уверены?')) {
+    return;
+  }
+  element.remove();
+  const response = await fetch(`http://localhost:3000/api/students/${id}`, {
+    method: 'DELETE'
+  });
+  // let studentArr = await response.json();
+  return getFromLocalServer();
+}
+
+
 // Функция вывода даты в удобном нам формате
-function getDateFormat(date) {
-  date = new Date(date);
+function getDateFormat(data) {
+  let date = new Date(data);
   let result = date.getDate() < 10 ? '0' + date.getDate() + '.' : date.getDate() + '.';
   result = result + (date.getMonth() < 9 ? '0' + (date.getMonth() + 1) + '.' : (date.getMonth() + 1) + '.');
   result = result + date.getFullYear();
@@ -130,7 +136,7 @@ function validationForm(form) {
 }
 
 // Функция вывода одного студента в таблицу 
-function getStudentItem(studentObj) {
+function createStudentItem(studentObj, onDelete) {
   let studentTr = document.createElement("tr")
   let fulNameTd = document.createElement("td")
   let faculTd = document.createElement("td")
@@ -141,14 +147,9 @@ function getStudentItem(studentObj) {
 
   // Удаление строки с данными студента
   removeBtn.onclick = function () {
-    if (confirm('Вы уверены?')) {
-      studentTr.remove()
-      // Загружаю, изменяю и снова записываю в LS массив при удалении студента
-      let studentsList = downloadFromLocalStorage('studentsList');
-      let newStudentsList = studentsList.filter(student => student.id !== studentObj.id)
-      saveInLocalStorage('studentsList', newStudentsList);
-    }
+    deleteFromLocalServer(studentObj.id, studentTr);
   }
+
   // Добавление данных из объекта в ячейки таблицы
   fulNameTd.textContent = `${studentObj.surname} ${studentObj.name} ${studentObj.lastname}`;
   faculTd.textContent = studentObj.faculty;
@@ -165,9 +166,11 @@ function getStudentItem(studentObj) {
 // Функция отрисовки таблицы всех студентов
 function renderStudentsList(arr) {
   tbody.innerHTML = '';
-  for (let studentObj of arr) {
-    tbody.append(getStudentItem(studentObj));
-  }
+  // проверка
+  console.log(arr);
+  arr.forEach(studentItem => {
+    tbody.append(createStudentItem(studentItem));
+  })
 }
 
 // функция сортировки массива студентов
@@ -202,10 +205,13 @@ function filterStudent(value, prop, arr) {
 }
 
 
-// Start. Создание статичных элементов html и загрузка интерактивных элементов в JS
+// Start. 
 
-// Массив объектов студентов первоначальный
-const studentsList = [
+// первоначальный массив студентов 
+// let studentsList = [];
+
+// первоначальный массив студентов 
+let studentsList = [
   {
     name: 'Олег',
     surname: 'Соловьёв',
@@ -237,6 +243,7 @@ for (let studentItem of studentsList) {
   saveInLocalServer(studentItem);
 };
 
+// Создание статичных элементов html и загрузка интерактивных элементов в JS
 // Загрузка модального окна в JS
 const openFormBtn = document.getElementById('openFormBtn');
 const modalForm = document.getElementById('modal-form');
@@ -331,10 +338,6 @@ document.getElementById('resetFilterBtn').addEventListener("click", (e) => {
   facultyFilter.value = '';
   studyStartFilter.value = '';
   finishYearFilter.value = '';
-
-  // запуск функции отрисовки таблицы студентов
-  renderStudentsList(studentsList);
-
 });
 
 // закрытие модального окна
@@ -361,29 +364,22 @@ addBtn.addEventListener("click", async e => {
   if (validationForm(modalForm)) {
 
     let newStudent = {
-      name: nameInp.value,
-      surname: surnameInp.value,
-      lastname: lastnameInp.value,
-      birthday: Date.parse(birthdayInp.value),
+      name: nameInp.value.trim(),
+      surname: surnameInp.value.trim(),
+      lastname: lastnameInp.value.trim(),
+      // birthday: Date.parse(birthdayInp.value),
+      birthday: new Date(birthdayInp.value),
       studyStart: +studyStartInp.value,
-      faculty: facultyInp.value,
+      faculty: facultyInp.value.trim(),
     };
 
-    // Добавляем нового студента с данными на сервер
+    // Добавляем нового студента с данными на сервер с отрисовкой таблицы студентов
     saveInLocalServer(newStudent);
 
     // Закрытие модального окна
     modalForm.classList.remove("modal-parent--open")
-
-    // Получение массива студентов с сервера и запуск отрисовки таблицы студентов
-    
-    renderStudentsList(studentsList);
-    console.log(studentsList);
   }
-
 })
 
 
 
-// Отрисовка всех студентов в таблице
-renderStudentsList(studentsList);
