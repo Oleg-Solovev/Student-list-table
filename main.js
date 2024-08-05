@@ -164,10 +164,10 @@ async function apiStudentList() {
     }
 
     // Проверка даты рождения
-    let date = new Date(birthdayInp.value).getTime();
+    let date = (new Date(birthdayInp.value)).getTime();
     const currentDate = new Date();
     removeError(birthdayInp);
-    if (date < 0 || date > currentDate.getTime()) {
+    if (date < -2208988800000 || date > currentDate.getTime()) {
       createError(birthdayInp, 'Диапазон даты от 01.01.1900 до текущей даты!');
       accept = false;
     }
